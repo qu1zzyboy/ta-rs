@@ -49,3 +49,21 @@ pub trait High {
 pub trait Volume {
     fn volume(&self) -> f64;
 }
+//Quote asset volume
+pub trait Qav {
+    fn qav(&self) -> Option<f64>;
+}
+//Taker buy base asset volume
+pub trait Tbbav {
+    fn tbbav(&self) -> Option<f64>;
+}
+
+//Taker buy quote asset volume
+pub trait Tbqav {
+    fn tbqav(&self) -> Option<f64>;
+}
+
+//Number of Trades
+pub trait Not {
+    fn not(&self) -> Option<u64>;
+}

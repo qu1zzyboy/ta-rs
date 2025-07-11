@@ -37,8 +37,8 @@ lto = true
 name = "indicators"
 path = "benches/indicators.rs"
 harness = false
-
 [[example]]
 name = "ema_serde"
 path = "examples/ema_serde.rs"
 required-features = ["serde"]
+
