@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::traits::{Close, High, Low, Open, Volume, Qav, Tbbav, Tbqav, Not};
+use crate::traits::{Close, High, Low, Not, Open, Qav, Tbbav, Tbqav, Volume};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -45,11 +45,11 @@ pub struct DataItem {
     low: f64,
     close: f64,
     volume: f64,
-    qav: Option<f64>,        // Quote asset volume
-    tbbav: Option<f64>,      // Taker buy base asset volume
-    tbqav: Option<f64>,      // Taker buy quote asset volume
-    not: Option<u64>,        // Number of trades
-    timestamp: Option<u64>,  // Unix timestamp
+    qav: Option<f64>,       // Quote asset volume
+    tbbav: Option<f64>,     // Taker buy base asset volume
+    tbqav: Option<f64>,     // Taker buy quote asset volume
+    not: Option<u64>,       // Number of trades
+    timestamp: Option<u64>, // Unix timestamp
 }
 
 impl DataItem {
@@ -237,13 +237,13 @@ impl DataItemBuilder {
                         return Err(TaError::DataItemInvalid);
                     }
                 }
-                
+
                 if let Some(tbbav) = self.tbbav {
                     if tbbav < 0.0 {
                         return Err(TaError::DataItemInvalid);
                     }
                 }
-                
+
                 if let Some(tbqav) = self.tbqav {
                     if tbqav < 0.0 {
                         return Err(TaError::DataItemInvalid);
@@ -300,7 +300,7 @@ mod tests {
         assert_eq!(item.low(), 15.0);
         assert_eq!(item.close(), 21.0);
         assert_eq!(item.volume(), 7500.0);
-        
+
         // 可选字段应该是 None
         assert_eq!(item.qav(), None);
         assert_eq!(item.tbbav(), None);
@@ -342,7 +342,7 @@ mod tests {
         // 测试无效的 OHLCV 数据
         let result = DataItem::builder()
             .open(20.0)
-            .high(15.0)  // high < low，无效
+            .high(15.0) // high < low，无效
             .low(25.0)
             .close(21.0)
             .volume(7500.0)
@@ -374,7 +374,7 @@ mod tests {
             .low(15.0)
             .close(21.0)
             .volume(7500.0)
-            .qav(-100.0)  // 负数，无效
+            .qav(-100.0) // 负数，无效
             .build();
 
         assert!(result.is_err());

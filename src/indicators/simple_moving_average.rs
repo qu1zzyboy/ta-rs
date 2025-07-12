@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::errors::{Result, TaError};
-use crate::{Close, Next, Period, Reset};
+use crate::{Close, Next, Period, Reset, Update};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -91,6 +91,26 @@ impl Next<f64> for SimpleMovingAverage {
         self.sum / (self.count as f64)
     }
 }
+impl Update<f64> for SimpleMovingAverage {
+    type Output = f64;
+    fn update(&mut self, input: f64) -> Self::Output {
+        if self.count == 0 {
+            self.next(input)
+        } else {
+            // 计算前一个索引，处理循环数组的边界情况
+            let prev_index = if self.index == 0 {
+                self.period - 1
+            } else {
+                self.index - 1
+            };
+            
+            let old_val: f64 = self.deque[prev_index];
+            self.deque[prev_index] = input;
+            self.sum = self.sum - old_val + input;
+            self.sum / (self.count as f64)
+        }
+    }
+}
 
 impl<T: Close> Next<&T> for SimpleMovingAverage {
     type Output = f64;
@@ -147,7 +167,15 @@ mod tests {
         assert_eq!(sma.next(6.0), 6.0);
         assert_eq!(sma.next(2.0), 5.0);
     }
-
+    #[test]
+    fn test_update() {
+        let mut sma = SimpleMovingAverage::new(4).unwrap();
+        assert_eq!(sma.next(4.0), 4.0);
+        assert_eq!(sma.next(5.0), 4.5);
+        assert_eq!(sma.next(6.0), 5.0);
+        assert_eq!(sma.next(6.0), 5.25);
+        assert_eq!(sma.update(6.0), 5.25);
+    }
     #[test]
     fn test_next_with_bars() {
         fn bar(close: f64) -> Bar {
