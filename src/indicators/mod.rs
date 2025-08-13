@@ -69,3 +69,11 @@ mod on_balance_volume;
 pub use self::on_balance_volume::OnBalanceVolume;
 
 pub mod hbfc_one;
+pub mod new_ema;
+pub use self::new_ema::NewEma;
+pub mod new_macd;
+pub use self::new_macd::NewMacd;
+pub mod new_rsi;
+pub use self::new_rsi::NewRsi;
+pub mod new_bollinger;
+pub use self::new_bollinger::NewBollinger;

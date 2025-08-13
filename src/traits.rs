@@ -71,3 +71,7 @@ pub trait Tbqav {
 pub trait Not {
     fn not(&self) -> Option<u64>;
 }
+
+pub trait IsClosed {
+    fn is_closed(&self) -> Option<bool>;
+}

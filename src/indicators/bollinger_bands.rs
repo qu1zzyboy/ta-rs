@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::errors::Result;
 use crate::indicators::StandardDeviation as Sd;
-use crate::{Close, Next, Period, Reset};
+use crate::{Close, Next, Period, Reset, Update};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -110,6 +110,21 @@ impl Reset for BollingerBands {
     }
 }
 
+impl Update<f64> for BollingerBands {
+    type Output = BollingerBandsOutput;
+
+    fn update(&mut self, input: f64) -> Self::Output {
+        let sd = self.sd.update(input);
+        let mean = self.sd.mean();
+
+        Self::Output {
+            average: mean,
+            upper: mean + sd * self.multiplier,
+            lower: mean - sd * self.multiplier,
+        }
+    }
+}
+
 impl Default for BollingerBands {
     fn default() -> Self {
         Self::new(9, 2_f64).unwrap()
@@ -197,5 +212,37 @@ mod tests {
     fn test_display() {
         let bb = BollingerBands::new(10, 3.0_f64).unwrap();
         assert_eq!(format!("{}", bb), "BB(10, 3)");
+    }
+
+    #[test]
+    fn test_update() {
+        let mut bb = BollingerBands::new(3, 2.0_f64).unwrap();
+
+        // 初始填充数据
+        let a = bb.next(2.0);
+        let b = bb.next(5.0);
+        let c = bb.next(1.0);
+
+        assert_eq!(round(a.average), 2.0);
+        assert_eq!(round(b.average), 3.5);
+        assert_eq!(round(c.average), 2.667);
+
+        // 测试更新最后一个值
+        let d = bb.update(6.0);  // 更新1.0为6.0
+        assert_eq!(round(d.average), 4.333);
+        assert_eq!(round(d.upper), 7.733);
+        assert_eq!(round(d.lower), 0.934);
+
+        // 再次更新同一个值
+        let e = bb.update(4.0);  // 更新6.0为4.0
+        assert_eq!(round(e.average), 3.667);
+        assert_eq!(round(e.upper), 6.161);
+        assert_eq!(round(e.lower), 1.172);
+
+        // 继续正常的next操作
+        let f = bb.next(7.0);
+        assert_eq!(round(f.average), 5.333);
+        assert_eq!(round(f.upper), 7.828);
+        assert_eq!(round(f.lower), 2.839);
     }
 }

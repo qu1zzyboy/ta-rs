@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::errors::{Result, TaError};
-use crate::{Close, Next, Period, Reset};
+use crate::{Close, Next, Period, Reset, Update};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -102,6 +102,40 @@ impl Next<f64> for StandardDeviation {
             let delta2 = input - self.m + old_val - old_m;
             self.m2 += delta * delta2;
         }
+        if self.m2 < 0.0 {
+            self.m2 = 0.0;
+        }
+
+        (self.m2 / self.count as f64).sqrt()
+    }
+}
+
+impl Update<f64> for StandardDeviation {
+    type Output = f64;
+
+    fn update(&mut self, input: f64) -> Self::Output {
+        if self.count == 0 {
+            return self.next(input);
+        }
+
+        // 计算前一个索引，处理循环数组的边界情况
+        let prev_index = if self.index == 0 {
+            self.period - 1
+        } else {
+            self.index - 1
+        };
+
+        // 获取旧值
+        let old_val = self.deque[prev_index];
+        self.deque[prev_index] = input;
+
+        // 使用 Welford 算法更新统计量
+        let delta = input - old_val;
+        let old_m = self.m;
+        self.m += delta / self.count as f64;
+        let delta2 = input - self.m + old_val - old_m;
+        self.m2 += delta * delta2;
+
         if self.m2 < 0.0 {
             self.m2 = 0.0;
         }
@@ -222,5 +256,25 @@ mod tests {
     fn test_display() {
         let sd = StandardDeviation::new(5).unwrap();
         assert_eq!(format!("{}", sd), "SD(5)");
+    }
+
+    #[test]
+    fn test_update() {
+        let mut sd = StandardDeviation::new(4).unwrap();
+        
+        // 初始填充数据
+        assert_eq!(sd.next(10.0), 0.0);
+        assert_eq!(sd.next(20.0), 5.0);
+        assert_eq!(round(sd.next(30.0)), 8.165);
+        assert_eq!(round(sd.next(20.0)), 7.071);
+        
+        // 测试更新最后一个值
+        assert_eq!(round(sd.update(25.0)), 7.395);  // [10.0, 20.0, 30.0, 25.0]
+        
+        // 再次更新同一个值
+        assert_eq!(round(sd.update(15.0)), 7.395);  // [10.0, 20.0, 30.0, 15.0]
+        
+        // 继续正常的next操作
+        assert_eq!(round(sd.next(40.0)), 9.601);    // [20.0, 30.0, 15.0, 40.0]
     }
 }

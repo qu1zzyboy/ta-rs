@@ -1,4 +1,5 @@
 use std::fmt;
+use std::sync::Arc;
 
 use crate::errors::{Result, TaError};
 use crate::{Close, Next, Period, Reset, Update};
@@ -120,6 +121,14 @@ impl<T: Close> Next<&T> for SimpleMovingAverage {
     }
 }
 
+impl<T: Close> Next<Arc<T>> for SimpleMovingAverage {
+    type Output = f64;
+
+    fn next(&mut self, input: Arc<T>) -> Self::Output {
+        self.next(input.close())
+    }
+}
+
 impl Reset for SimpleMovingAverage {
     fn reset(&mut self) {
         self.index = 0;
@@ -187,6 +196,28 @@ mod tests {
         assert_eq!(sma.next(&bar(4.0)), 4.0);
         assert_eq!(sma.next(&bar(7.0)), 5.0);
         assert_eq!(sma.next(&bar(1.0)), 4.0);
+    }
+
+    #[test]
+    fn test_next_with_arc() {
+        use std::sync::Arc;
+        
+        fn bar(close: f64) -> Bar {
+            Bar::new().close(close)
+        }
+
+        let mut sma = SimpleMovingAverage::new(3).unwrap();
+        
+        // 测试 Arc<T> 支持
+        let arc_bar1 = Arc::new(bar(4.0));
+        let arc_bar2 = Arc::new(bar(4.0));
+        let arc_bar3 = Arc::new(bar(7.0));
+        let arc_bar4 = Arc::new(bar(1.0));
+        
+        assert_eq!(sma.next(arc_bar1), 4.0);
+        assert_eq!(sma.next(arc_bar2), 4.0);
+        assert_eq!(sma.next(arc_bar3), 5.0);
+        assert_eq!(sma.next(arc_bar4), 4.0);
     }
 
     #[test]
