@@ -75,3 +75,7 @@ pub trait Not {
 pub trait IsClosed {
     fn is_closed(&self) -> Option<bool>;
 }
+pub trait Orderbook {
+    fn get_xx_bid(&self) -> [(u64, u64); 20];
+    fn get_xx_ask(&self) -> [(u64, u64); 20];
+}

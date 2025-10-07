@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::errors::{Result, TaError};
-use crate::{Low, Next, Period, Reset};
+use crate::{Low, Next, Period, Reset, Update};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -83,6 +83,34 @@ impl Next<f64> for Minimum {
         } else {
             0
         };
+
+        self.deque[self.min_index]
+    }
+}
+
+impl Update<f64> for Minimum {
+    type Output = f64;
+
+    fn update(&mut self, input: f64) -> Self::Output {
+        // 计算当前要更新的索引（cur_index指向下一个要写入的位置）
+        let update_index = if self.cur_index == 0 {
+            self.period - 1
+        } else {
+            self.cur_index - 1
+        };
+
+        // 更新指定位置的值
+        self.deque[update_index] = input;
+
+        // 重新计算最小值索引
+        if update_index == self.min_index {
+            // 如果更新的是当前最小值的位置，需要重新查找最小值
+            self.min_index = self.find_min_index();
+        } else if input < self.deque[self.min_index] {
+            // 如果更新值比当前最小值还小，更新最小值索引
+            self.min_index = update_index;
+        }
+        // 如果更新的是其他位置且不是新的最小值，则不需要改变min_index
 
         self.deque[self.min_index]
     }
@@ -179,5 +207,20 @@ mod tests {
     fn test_display() {
         let indicator = Minimum::new(10).unwrap();
         assert_eq!(format!("{}", indicator), "MIN(10)");
+    }
+
+    #[test]
+    fn test_update() {
+        let mut min = Minimum::new(3).unwrap();
+        
+        // 先添加一些值
+        assert_eq!(min.next(4.0), 4.0);
+        assert_eq!(min.next(1.2), 1.2);
+        assert_eq!(min.next(5.0), 1.2);
+        
+        // 更新最后一个值
+        assert_eq!(min.update(0.5), 0.5);
+        // 再次更新同一个值
+        assert_eq!(min.update(2.0), 1.2);
     }
 }

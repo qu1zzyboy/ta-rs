@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::errors::{Result, TaError};
-use crate::{High, Next, Period, Reset};
+use crate::{High, Next, Period, Reset, Update};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -84,6 +84,34 @@ impl Next<f64> for Maximum {
         } else {
             0
         };
+
+        self.deque[self.max_index]
+    }
+}
+
+impl Update<f64> for Maximum {
+    type Output = f64;
+
+    fn update(&mut self, input: f64) -> Self::Output {
+        // 计算当前要更新的索引（cur_index指向下一个要写入的位置）
+        let update_index = if self.cur_index == 0 {
+            self.period - 1
+        } else {
+            self.cur_index - 1
+        };
+
+        // 更新指定位置的值
+        self.deque[update_index] = input;
+
+        // 重新计算最大值索引
+        if update_index == self.max_index {
+            // 如果更新的是当前最大值的位置，需要重新查找最大值
+            self.max_index = self.find_max_index();
+        } else if input > self.deque[self.max_index] {
+            // 如果更新值比当前最大值还大，更新最大值索引
+            self.max_index = update_index;
+        }
+        // 如果更新的是其他位置且不是新的最大值，则不需要改变max_index
 
         self.deque[self.max_index]
     }
@@ -179,5 +207,21 @@ mod tests {
     fn test_display() {
         let indicator = Maximum::new(7).unwrap();
         assert_eq!(format!("{}", indicator), "MAX(7)");
+    }
+
+    #[test]
+    fn test_update() {
+        let mut max = Maximum::new(3).unwrap();
+        
+        // 先添加一些值
+        assert_eq!(max.next(4.0), 4.0);
+        assert_eq!(max.next(1.2), 4.0);
+        assert_eq!(max.next(5.0), 5.0);
+        
+        // 更新最后一个值
+        assert_eq!(max.update(6.25), 6.25);
+        
+        // 再次更新同一个值
+        assert_eq!(max.update(3.0), 4.0);
     }
 }
