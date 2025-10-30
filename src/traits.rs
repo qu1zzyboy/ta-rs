@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+use crate::types::{U64Price, U64Quantity};
 // Indicator traits
 //
 
@@ -76,6 +78,16 @@ pub trait IsClosed {
     fn is_closed(&self) -> Option<bool>;
 }
 pub trait Orderbook {
-    fn get_xx_bid(&self) -> [(u64, u64); 20];
-    fn get_xx_ask(&self) -> [(u64, u64); 20];
+    fn get_bids_btm(&self) -> &BTreeMap<U64Price, U64Quantity>;
+    fn get_asks_btm(&self) -> &BTreeMap<U64Price, U64Quantity>;
+}
+/// OrderTicker trait for accessing best bid/ask price data
+pub trait OrderTicker {
+    fn get_best_bid_price(&self) -> u64;
+    fn get_best_ask_price(&self) -> u64;
+    fn get_best_bid_quantity(&self) -> u64;
+    fn get_best_ask_quantity(&self) -> u64;
+    fn get_timestamp(&self) -> u64;
+    fn get_exchange(&self) -> &str;
+    fn get_symbol(&self) -> &str;
 }
