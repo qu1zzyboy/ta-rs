@@ -87,7 +87,9 @@ pub trait OrderTicker {
     fn get_best_ask_price(&self) -> u64;
     fn get_best_bid_quantity(&self) -> u64;
     fn get_best_ask_quantity(&self) -> u64;
-    fn get_timestamp(&self) -> u64;
-    fn get_exchange(&self) -> &str;
-    fn get_symbol(&self) -> &str;
+}
+pub trait TradeTicker {
+    fn get_trade_price(&self) -> u64;
+    fn get_trade_quantity(&self) -> u64;
+    fn get_trade_time(&self) -> u64;
 }
