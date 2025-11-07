@@ -120,7 +120,6 @@ impl fmt::Display for NewMacd {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_helper::*;
 
     fn round(nums: (f64, f64, f64)) -> (f64, f64, f64) {
         let n0 = (nums.0 * 100.0).round() / 100.0;

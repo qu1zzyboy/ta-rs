@@ -1,7 +1,8 @@
-use std::fmt;
 use std::sync::Arc;
 
-use crate::{Close, DataItem, Next, Open, Reset, Tbbav, Update};
+use crate::{Close, Next, Open, Tbbav};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone)]

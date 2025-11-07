@@ -10,6 +10,9 @@ pub use self::simple_moving_average::SimpleMovingAverage;
 mod standard_deviation;
 pub use self::standard_deviation::StandardDeviation;
 
+mod z_score;
+pub use self::z_score::ZScore;
+
 mod mean_absolute_deviation;
 pub use self::mean_absolute_deviation::MeanAbsoluteDeviation;
 
@@ -77,3 +80,6 @@ pub mod new_rsi;
 pub use self::new_rsi::NewRsi;
 pub mod new_bollinger;
 pub use self::new_bollinger::NewBollinger;
+
+mod support_width_factor;
+pub use self::support_width_factor::{SupportWidthFactor, SupportWidthFactorConfig};

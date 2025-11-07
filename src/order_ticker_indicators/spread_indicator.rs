@@ -103,6 +103,7 @@ mod tests {
     use super::*;
 
     // Mock OrderTicker for testing
+    #[allow(dead_code)]
     struct MockOrderTicker {
         best_bid_price: u64,
         best_ask_price: u64,
@@ -143,15 +144,20 @@ mod tests {
         fn get_best_ask_quantity(&self) -> u64 {
             self.best_ask_quantity
         }
+    }
 
+    impl MockOrderTicker {
+        #[allow(dead_code)]
         fn get_timestamp(&self) -> u64 {
             self.timestamp
         }
 
+        #[allow(dead_code)]
         fn get_exchange(&self) -> &str {
             &self.exchange
         }
 
+        #[allow(dead_code)]
         fn get_symbol(&self) -> &str {
             &self.symbol
         }
