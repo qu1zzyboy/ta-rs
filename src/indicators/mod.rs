@@ -16,6 +16,9 @@ pub use self::z_score::ZScore;
 mod mean_absolute_deviation;
 pub use self::mean_absolute_deviation::MeanAbsoluteDeviation;
 
+mod median;
+pub use self::median::Median;
+
 mod relative_strength_index;
 pub use self::relative_strength_index::RelativeStrengthIndex;
 

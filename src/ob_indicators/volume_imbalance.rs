@@ -1,7 +1,6 @@
 use std::fmt;
 
-use crate::traits::{Next, Orderbook, Reset};
-use crate::types::{U64Price, U64Quantity};
+use crate::traits::{Next, OrderbookU64, Reset};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +36,7 @@ use serde::{Deserialize, Serialize};
 /// ```
 /// use ta::ob_indicators::VolumeImbalance;
 /// use ta::Next;
-/// use ta::Orderbook;
+/// use ta::OrderbookU64;
 /// 
 /// // Assuming you have an orderbook that implements Orderbook trait
 /// let mut vi = VolumeImbalance::new();
@@ -58,7 +57,7 @@ impl VolumeImbalance {
     }
 }
 
-impl<T: Orderbook> Next<&T> for VolumeImbalance {
+impl<T: OrderbookU64> Next<&T> for VolumeImbalance {
     type Output = u64;
 
     fn next(&mut self, orderbook: &T) -> Self::Output {
@@ -151,6 +150,7 @@ impl fmt::Display for VolumeImbalance {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::types::{U64Price, U64Quantity};
 
     // Mock orderbook for testing using BTreeMap
     struct MockOrderbook {
@@ -183,7 +183,7 @@ mod tests {
         }
     }
 
-    impl Orderbook for MockOrderbook {
+    impl OrderbookU64 for MockOrderbook {
         fn get_bids_btm(&self) -> &std::collections::BTreeMap<U64Price, U64Quantity> {
             &self.bids
         }

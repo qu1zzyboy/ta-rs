@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use ordered_float::OrderedFloat;
 use crate::types::{U64Price, U64Quantity};
 // Indicator traits
 //
@@ -77,19 +78,59 @@ pub trait Not {
 pub trait IsClosed {
     fn is_closed(&self) -> Option<bool>;
 }
-pub trait Orderbook {
+pub trait Timestamp{
+    fn timestamp(&self) -> u64;
+}
+
+pub trait Orderbookf64{
+    fn get_bids_btm(&self) -> &BTreeMap<OrderedFloat<f64>, f64>;
+    fn get_asks_btm(&self) -> &BTreeMap<OrderedFloat<f64>, f64>;
+}
+
+pub trait TradeTickerf64: Timestamp {
+    fn get_trade_price(&self) -> f64;
+    fn get_trade_quantity(&self) -> f64;
+}
+
+pub trait OrderTickerf64:Timestamp{
+    fn get_best_bid_price(&self) -> f64;
+    fn get_best_ask_price(&self) -> f64;
+    fn get_best_bid_quantity(&self) -> f64;
+    fn get_best_ask_quantity(&self) -> f64;
+}
+
+pub trait OrderbookU64 {
     fn get_bids_btm(&self) -> &BTreeMap<U64Price, U64Quantity>;
     fn get_asks_btm(&self) -> &BTreeMap<U64Price, U64Quantity>;
 }
 /// OrderTicker trait for accessing best bid/ask price data
-pub trait OrderTicker {
+pub trait OrderTickerU64 {
     fn get_best_bid_price(&self) -> u64;
     fn get_best_ask_price(&self) -> u64;
     fn get_best_bid_quantity(&self) -> u64;
     fn get_best_ask_quantity(&self) -> u64;
 }
-pub trait TradeTicker {
+pub trait TradeTickerU64: Timestamp {
     fn get_trade_price(&self) -> u64;
     fn get_trade_quantity(&self) -> u64;
-    fn get_trade_time(&self) -> u64;
+}
+
+/// BatchTradeTicker trait for accessing a batch of trade ticks within a time window.
+///
+/// Returns `None` if the time window is empty (no trades), or `Some(&[T])` with the slice
+/// of trade ticks in the window.
+pub trait BatchTradeTickerU64<T: TradeTickerU64> {
+    fn get_batch_trade_ticker(&self) -> Option<&[T]>;
+}
+
+pub trait BatchOrderTickerU64<T: OrderTickerU64> {
+    fn get_batch_order_ticker(&self) -> Option<&[T]>;
+}
+
+pub trait BatchTradeTickerf64<T: TradeTickerf64> {
+    fn get_batch_trade_ticker(&self) -> Option<&[T]>;
+}
+
+pub trait BatchOrderTickerf64<T: OrderTickerf64> {
+    fn get_batch_order_ticker(&self) -> Option<&[T]>;
 }

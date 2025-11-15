@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::traits::{Next, OrderTicker, Reset};
+use crate::traits::{Next, OrderTickerU64, Reset};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 /// ```
 /// use ta::order_ticker_indicators::SpreadIndicator;
 /// use ta::Next;
-/// use ta::OrderTicker;
+/// use ta::OrderTickerU64;
 /// 
 /// // Assuming you have an OrderTickBuffer that implements OrderTicker trait
 /// let mut spread = SpreadIndicator::new(10);
@@ -51,7 +51,7 @@ impl SpreadIndicator {
     }
 }
 
-impl<T: OrderTicker> Next<&T> for SpreadIndicator {
+impl<T: OrderTickerU64> Next<&T> for SpreadIndicator {
     type Output = u64;
 
     fn next(&mut self, ticker: &T) -> Self::Output {
@@ -128,7 +128,7 @@ mod tests {
         }
     }
 
-    impl OrderTicker for MockOrderTicker {
+    impl OrderTickerU64 for MockOrderTicker {
         fn get_best_bid_price(&self) -> u64 {
             self.best_bid_price
         }

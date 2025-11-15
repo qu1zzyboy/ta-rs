@@ -62,6 +62,7 @@ pub mod errors;
 pub mod indicators;
 pub mod ob_indicators;
 pub mod order_ticker_indicators;
+pub mod trade_ticker_indicator;
 
 mod traits;
 pub use crate::traits::*;
