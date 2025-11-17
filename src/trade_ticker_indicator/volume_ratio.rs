@@ -166,6 +166,10 @@ mod tests {
         fn get_trade_quantity(&self) -> u64 {
             self.quantity
         }
+
+        fn is_mm_buyer(&self) -> bool {
+            false // Default value for testing
+        }
     }
 
     // Mock BatchTradeTicker implementation

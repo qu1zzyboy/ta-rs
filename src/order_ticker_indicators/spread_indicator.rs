@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::traits::{Next, OrderTickerU64, Reset};
+use crate::traits::{Next, OrderTickerU64, Reset, Timestamp};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -125,6 +125,12 @@ mod tests {
                 exchange: "TEST".to_string(),
                 symbol: "BTCUSDT".to_string(),
             }
+        }
+    }
+
+    impl Timestamp for MockOrderTicker {
+        fn timestamp(&self) -> u64 {
+            self.timestamp
         }
     }
 

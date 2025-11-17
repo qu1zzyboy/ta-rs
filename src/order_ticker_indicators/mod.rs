@@ -5,5 +5,7 @@
 //! based on the best bid and ask prices from order ticker data.
 
 pub mod spread_indicator;
+pub mod ot_quantity;
 
 pub use spread_indicator::SpreadIndicator;
+pub use ot_quantity::OtQuantityF64;

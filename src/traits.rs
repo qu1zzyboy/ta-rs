@@ -28,6 +28,11 @@ pub trait Next<T> {
     fn next(&mut self, input: T) -> Self::Output;
 }
 
+pub trait Next2<T1, T2> {
+    type Output;
+    fn next(&mut self, input: T1) -> Self::Output;
+}
+
 pub trait Update<T> {
     type Output;
     fn update(&mut self, input: T) -> Self::Output;
@@ -90,6 +95,7 @@ pub trait Orderbookf64{
 pub trait TradeTickerf64: Timestamp {
     fn get_trade_price(&self) -> f64;
     fn get_trade_quantity(&self) -> f64;
+    fn is_mm_buyer(&self) -> bool;
 }
 
 pub trait OrderTickerf64:Timestamp{
@@ -104,7 +110,7 @@ pub trait OrderbookU64 {
     fn get_asks_btm(&self) -> &BTreeMap<U64Price, U64Quantity>;
 }
 /// OrderTicker trait for accessing best bid/ask price data
-pub trait OrderTickerU64 {
+pub trait OrderTickerU64: Timestamp {
     fn get_best_bid_price(&self) -> u64;
     fn get_best_ask_price(&self) -> u64;
     fn get_best_bid_quantity(&self) -> u64;
@@ -113,6 +119,7 @@ pub trait OrderTickerU64 {
 pub trait TradeTickerU64: Timestamp {
     fn get_trade_price(&self) -> u64;
     fn get_trade_quantity(&self) -> u64;
+    fn is_mm_buyer(&self) -> bool;
 }
 
 /// BatchTradeTicker trait for accessing a batch of trade ticks within a time window.

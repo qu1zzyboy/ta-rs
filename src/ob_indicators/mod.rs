@@ -5,5 +5,7 @@
 //! volume imbalances, and other microstructure metrics.
 
 pub mod volume_imbalance;
+pub mod volume_imbalance_f64;
 
 pub use volume_imbalance::VolumeImbalance;
+pub use volume_imbalance_f64::VolumeImbalanceF64;
