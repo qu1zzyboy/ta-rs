@@ -86,3 +86,15 @@ pub use self::new_bollinger::NewBollinger;
 
 mod support_width_factor;
 pub use self::support_width_factor::{SupportWidthFactor, SupportWidthFactorConfig};
+
+mod rolling_max;
+pub use self::rolling_max::RollingMax;
+
+mod price_change;
+pub use self::price_change::PriceChange;
+
+mod drawdown_from_high;
+pub use self::drawdown_from_high::DrawdownFromHigh;
+
+mod downward_momentum;
+pub use self::downward_momentum::DownwardMomentum;
