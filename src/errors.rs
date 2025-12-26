@@ -8,6 +8,7 @@ pub enum TaError {
     InvalidParameter,
     DataItemIncomplete,
     DataItemInvalid,
+    InvalidInput,
 }
 
 impl Display for TaError {
@@ -16,6 +17,7 @@ impl Display for TaError {
             TaError::InvalidParameter => write!(f, "invalid parameter"),
             TaError::DataItemIncomplete => write!(f, "data item is incomplete"),
             TaError::DataItemInvalid => write!(f, "data item is invalid"),
+            TaError::InvalidInput => write!(f, "invalid input value (NaN, infinite, or invalid)"),
         }
     }
 }
@@ -26,6 +28,7 @@ impl Error for TaError {
             TaError::InvalidParameter => None,
             TaError::DataItemIncomplete => None,
             TaError::DataItemInvalid => None,
+            TaError::InvalidInput => None,
         }
     }
 }

@@ -1,6 +1,5 @@
 use std::fmt;
 
-use crate::errors::Result;
 use crate::{Close, Next, Reset};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -8,12 +7,15 @@ use serde::{Deserialize, Serialize};
 /// Price change rate over a given period.
 ///
 /// It calculates the percentage change from the previous value (shift=1) or from N periods ago.
-/// Formula: (current - previous) / (previous + epsilon)
+/// Formula: (current - previous) / previous
+///
+/// Returns 0.0 if:
+///   - Prices are equal (current == previous)
+///   - Previous value is 0.0 (to avoid division by zero)
 ///
 /// # Parameters
 ///
 /// * _shift_ - number of periods to look back (default: 1)
-/// * _epsilon_ - small value to avoid division by zero (default: 1e-10)
 ///
 /// # Example
 ///
@@ -30,7 +32,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone)]
 pub struct PriceChange {
     shift: usize,
-    epsilon: f64,
     history: Vec<f64>,
     prev_value: f64,
     is_new: bool,
@@ -44,17 +45,6 @@ impl PriceChange {
     pub fn with_shift(shift: usize) -> Self {
         Self {
             shift: if shift == 0 { 1 } else { shift },
-            epsilon: 1e-10,
-            history: Vec::with_capacity(shift + 1),
-            prev_value: 0.0,
-            is_new: true,
-        }
-    }
-
-    pub fn with_epsilon(shift: usize, epsilon: f64) -> Self {
-        Self {
-            shift: if shift == 0 { 1 } else { shift },
-            epsilon,
             history: Vec::with_capacity(shift + 1),
             prev_value: 0.0,
             is_new: true,
@@ -90,7 +80,20 @@ impl Next<f64> for PriceChange {
         // Calculate change if we have enough history
         if self.history.len() > self.shift {
             let prev_value = self.history[self.history.len() - self.shift - 1];
-            let change = (input - prev_value) / (prev_value + self.epsilon);
+            
+            // If prices are equal, return 0.0
+            if input == prev_value {
+                self.prev_value = input;
+                return 0.0;
+            }
+            
+            // If previous value is 0.0, avoid division by zero
+            if prev_value == 0.0 {
+                self.prev_value = input;
+                return 0.0;
+            }
+            
+            let change = (input - prev_value) / prev_value;
             self.prev_value = input;
             change
         } else {
@@ -118,7 +121,7 @@ impl Reset for PriceChange {
 
 impl fmt::Display for PriceChange {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "PriceChange(shift={}, epsilon={})", self.shift, self.epsilon)
+        write!(f, "PriceChange(shift={})", self.shift)
     }
 }
 
@@ -130,7 +133,6 @@ mod tests {
     fn test_new() {
         let pc = PriceChange::new();
         assert_eq!(pc.shift, 1);
-        assert_eq!(pc.epsilon, 1e-10);
     }
 
     #[test]
@@ -142,8 +144,34 @@ mod tests {
         assert!((change1 - 0.02).abs() < 1e-10); // (102 - 100) / 100 = 0.02
 
         let change2 = pc.next(98.0);
-        let expected = (98.0 - 102.0) / (102.0 + 1e-10);
+        let expected = (98.0 - 102.0) / 102.0;
         assert!((change2 - expected).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_equal_prices() {
+        let mut pc = PriceChange::new();
+
+        pc.next(100.0); // First value
+        assert_eq!(pc.next(100.0), 0.0); // Same price, should return 0.0
+        assert_eq!(pc.next(100.0), 0.0); // Still same price
+        
+        // Now change price
+        let change = pc.next(102.0);
+        assert!((change - 0.02).abs() < 1e-10); // (102 - 100) / 100 = 0.02
+    }
+
+    #[test]
+    fn test_zero_previous_value() {
+        let mut pc = PriceChange::new();
+
+        pc.next(0.0); // First value is 0.0
+        assert_eq!(pc.next(100.0), 0.0); // Previous was 0.0, should return 0.0 to avoid division by zero
+        
+        // Now with non-zero values
+        pc.next(50.0);
+        let change = pc.next(100.0);
+        assert!((change - 1.0).abs() < 1e-10); // (100 - 50) / 50 = 1.0
     }
 
     #[test]
@@ -156,4 +184,7 @@ mod tests {
         assert_eq!(pc.next(100.0), 0.0);
     }
 }
+
+
+
 
